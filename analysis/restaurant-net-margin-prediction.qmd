@@ -1,0 +1,61 @@
+---
+title: "Predicting restaurant net margin from food delivery orders"
+author: "TODO: add team members' names"
+format:
+  html:
+    embed-resources: true
+execute:
+  eval: false # Change to true when ready to run the analysis.
+---
+
+```{r}
+# Load packages here.
+set.seed(522)
+```
+
+# Summary
+
+
+
+# Introduction
+
+How accurately can we predict an order's estimated restaurant net margin in
+US dollars using information available when the order is placed?
+
+
+
+# Methods
+
+## Data
+
+We use the [Global Food Delivery & Restaurant Market 2026 dataset](https://www.kaggle.com/datasets/luthfimuthathohirin/global-food-delivery-restaurant-market-2026).
+Our target is estimated restaurant net margin per order, measured in US dollars.
+
+
+
+```{r}
+# Create data folders.
+dir.create("../data/raw", recursive = TRUE, showWarnings = FALSE)
+dir.create("../data/processed", recursive = TRUE, showWarnings = FALSE)
+
+# Download and extract the data.
+
+url <- "https://www.kaggle.com/api/v1/datasets/download/luthfimuthathohirin/global-food-delivery-restaurant-market-2026"
+zip_file <- tempfile(fileext = ".zip")
+download.file(url, zip_file, mode = "wb")
+unzip(zip_file, exdir = "../data/raw")
+```
+
+```{r}
+# Read the data.
+orders <- read.csv("../data/raw/global_food_delivery_enriched_market_2026.csv")
+```
+
+## Analysis
+
+
+# Results & Discussion
+
+
+# References
+

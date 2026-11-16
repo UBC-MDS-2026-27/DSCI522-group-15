@@ -1,0 +1,46 @@
+# Operating system files
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
+
+# R session state and local IDE settings
+.Rhistory
+.RData
+.RDataTmp
+.Ruserdata
+.Rproj.user/
+
+# Local renv packages and caches (keep renv.lock and renv/activate.R)
+renv/library/
+renv/staging/
+renv/cache/
+renv/python/
+renv/sandbox/
+
+# Quarto / knitr temporary files and execution caches
+.quarto/
+**/*_cache/
+.knitr_cache/
+
+# Local Python environments, if used by supporting tools
+.venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Local credentials (keep secrets out of tracked R configuration files too)
+.Renviron
+.env
+.env.*
+!.env.example
+.kaggle/
+kaggle.json
+
+# Editor backup files
+*~
+*.swp
+*.swo
+
+# Intentionally track raw/processed data, .qmd source, rendered HTML/PDF,
+# report support assets, .Rprofile, renv.lock, and renv/activate.R.
