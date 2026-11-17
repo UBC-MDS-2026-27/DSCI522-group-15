@@ -5,11 +5,13 @@ format:
   html:
     embed-resources: true
 execute:
-  eval: false # Change to true when ready to run the analysis.
+  eval: true
 ---
 
 ```{r}
-# Load packages here.
+library(tidyverse)
+library(glmnet)
+theme_set(theme_minimal())
 set.seed(522)
 ```
 
@@ -41,21 +43,299 @@ dir.create("../data/processed", recursive = TRUE, showWarnings = FALSE)
 # Download and extract the data.
 
 url <- "https://www.kaggle.com/api/v1/datasets/download/luthfimuthathohirin/global-food-delivery-restaurant-market-2026"
-zip_file <- tempfile(fileext = ".zip")
-download.file(url, zip_file, mode = "wb")
-unzip(zip_file, exdir = "../data/raw")
+raw_file <- "../data/raw/global_food_delivery_enriched_market_2026.csv"
+if (!file.exists(raw_file)) {
+  zip_file <- tempfile(fileext = ".zip")
+  download.file(url, zip_file, mode = "wb")
+  unzip(zip_file, exdir = "../data/raw")
+}
+
+
 ```
 
 ```{r}
 # Read the data.
-orders <- read.csv("../data/raw/global_food_delivery_enriched_market_2026.csv")
+orders <- read_csv(raw_file, show_col_types = FALSE)
 ```
 
 ## Analysis
 
+```{r}
+# Split before exploration and preprocessing.
+set.seed(522)
+train_rows <- sample(seq_len(nrow(orders)), size = floor(0.8 * nrow(orders)))
+orders_train <- orders |> slice(train_rows)
+orders_test <- orders |> slice(-train_rows)
+```
+
+```{r}
+# Keep original order-time predictors and the target.
+columns <- c(
+  "metro_city", "cuisine_category", "order_channel", "order_value_usd",
+  "discount_applied_usd", "delivery_distance_km", "estimated_prep_time_min",
+  "delivery_fee_usd", "restaurant_price_tier", "is_peak_hour",
+  "weather_condition", "estimated_restaurant_net_margin_usd"
+)
+orders_train <- orders_train |>
+  select(all_of(columns))
+orders_test <- orders_test |>
+  select(all_of(columns))
+
+colSums(is.na(orders_train))
+```
+
+```{r}
+write_csv(orders_train, "../data/processed/orders_train.csv")
+write_csv(orders_test, "../data/processed/orders_test.csv")
+```
+
 
 # Results & Discussion
 
+## Training data exploration
+
+```{r}
+data.frame(
+  Variable = names(orders_train),
+  Type = sapply(orders_train, class),
+  Missing = colSums(is.na(orders_train))
+)
+```
+
+Table 1. Training-data types and missing values.
+
+```{r}
+categorical <- c("metro_city", "cuisine_category", "order_channel",
+                 "restaurant_price_tier", "is_peak_hour", "weather_condition")
+category_counts <- orders_train |>
+  select(all_of(categorical)) |>
+  mutate(across(everything(), as.character)) |>
+  pivot_longer(everything(), names_to = "Variable", values_to = "Category") |>
+  count(Variable, Category, name = "Orders")
+category_counts
+```
+
+Table 2. Category counts in the training data.
+
+```{r}
+margin <- orders_train$estimated_restaurant_net_margin_usd
+data.frame(
+  Orders = length(margin),
+  Minimum_USD = min(margin),
+  Median_USD = median(margin),
+  Mean_USD = mean(margin),
+  Maximum_USD = max(margin),
+  Negative_orders = sum(margin < 0),
+  Negative_percent = 100 * mean(margin < 0)
+)
+```
+
+Table 3. Estimated net margin in the training data.
+
+```{r}
+#| fig-cap: "Distribution of estimated restaurant net margin in the training data."
+#| fig-width: 7
+#| fig-height: 4
+ggplot(orders_train, aes(x = estimated_restaurant_net_margin_usd)) +
+  geom_histogram(bins = 30, fill = "steelblue", colour = "white") +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  labs(x = "Estimated net margin (USD)", y = "Number of orders")
+```
+
+```{r}
+#| fig-cap: "Estimated net margin versus order value and discount in the training data."
+#| fig-width: 9
+#| fig-height: 4
+orders_train |>
+  select(estimated_restaurant_net_margin_usd, order_value_usd, discount_applied_usd) |>
+  pivot_longer(c(order_value_usd, discount_applied_usd),
+               names_to = "Predictor", values_to = "Value") |>
+  mutate(Predictor = recode(Predictor, order_value_usd = "Order value",
+                            discount_applied_usd = "Discount")) |>
+  ggplot(aes(x = Value, y = estimated_restaurant_net_margin_usd)) +
+  geom_point(alpha = 0.2, colour = "steelblue", size = 1) +
+  facet_wrap(~ Predictor, scales = "free_x") +
+  labs(x = "Amount (USD)", y = "Estimated net margin (USD)")
+```
+
+```{r}
+#| fig-cap: "Estimated net margin by order channel in the training data."
+#| fig-width: 8
+#| fig-height: 4
+ggplot(orders_train,
+       aes(x = estimated_restaurant_net_margin_usd, y = order_channel)) +
+  geom_boxplot(fill = "lightblue", outlier.alpha = 0.3) +
+  labs(x = "Estimated net margin (USD)", y = "Order channel")
+```
+
+
+## Dummy regression baseline
+
+```{r}
+set.seed(522)
+folds <- sample(rep(1:5, length.out = nrow(orders_train)))
+dummy_rmse <- numeric(5)
+
+for (i in 1:5) {
+  train_margin <- orders_train$estimated_restaurant_net_margin_usd[folds != i]
+  validation_margin <- orders_train$estimated_restaurant_net_margin_usd[folds == i]
+
+  prediction <- mean(train_margin)
+  dummy_rmse[i] <- sqrt(mean((validation_margin - prediction)^2))
+}
+
+data.frame(
+  Model = "Mean baseline",
+  Mean_RMSE_USD = mean(dummy_rmse),
+  SD_RMSE_USD = sd(dummy_rmse)
+)
+```
+
+Table 4. Five-fold cross-validation performance of the dummy model.
+
+## Linear regression
+
+```{r}
+linear_rmse <- numeric(5)
+
+for (i in 1:5) {
+  fold_train <- orders_train |> filter(folds != i)
+  fold_validation <- orders_train |> filter(folds == i)
+
+  linear_model <- lm(estimated_restaurant_net_margin_usd ~ ., data = fold_train)
+  predictions <- predict(linear_model, newdata = fold_validation)
+  linear_rmse[i] <- sqrt(mean(
+    (fold_validation$estimated_restaurant_net_margin_usd - predictions)^2
+  ))
+}
+
+data.frame(
+  Model = c("Mean baseline", "Linear regression"),
+  Mean_RMSE_USD = c(mean(dummy_rmse), mean(linear_rmse)),
+  SD_RMSE_USD = c(sd(dummy_rmse), sd(linear_rmse))
+)
+```
+
+Table 5. Model performance using the same five cross-validation folds.
+
+## Ridge regression
+
+```{r}
+lambdas <- 10^seq(2, -5, by = -1)
+ridge_rmse <- matrix(NA_real_, nrow = 5, ncol = length(lambdas))
+
+for (i in 1:5) {
+  fold_train <- orders_train |> filter(folds != i)
+  fold_validation <- orders_train |> filter(folds == i)
+
+  # Use training categories to encode both datasets.
+  encoding <- lm(estimated_restaurant_net_margin_usd ~ ., data = fold_train)
+  x_train <- model.matrix(encoding)[, -1]
+  x_validation <- model.matrix(
+    delete.response(terms(encoding)), data = fold_validation,
+    contrasts.arg = encoding$contrasts, xlev = encoding$xlevels
+  )[, -1]
+
+  ridge_model <- glmnet(
+    x_train, fold_train$estimated_restaurant_net_margin_usd,
+    alpha = 0, lambda = lambdas, standardize = TRUE
+  )
+  predictions <- predict(ridge_model, newx = x_validation, s = lambdas)
+  ridge_rmse[i, ] <- sqrt(colMeans(
+    (predictions - fold_validation$estimated_restaurant_net_margin_usd)^2
+  ))
+}
+
+ridge_results <- data.frame(
+  Lambda = lambdas,
+  Mean_RMSE_USD = colMeans(ridge_rmse),
+  SD_RMSE_USD = apply(ridge_rmse, 2, sd)
+)
+ridge_results |> arrange(Mean_RMSE_USD)
+```
+
+Table 6. Ridge penalties compared using five-fold cross-validation.
+
+## Model comparison
+
+```{r}
+best_ridge <- ridge_results |> slice_min(Mean_RMSE_USD, n = 1, with_ties = FALSE)
+best_lambda <- best_ridge$Lambda
+
+model_comparison <- data.frame(
+  Model = c("Mean baseline", "Linear regression", "Ridge regression"),
+  Mean_RMSE_USD = c(mean(dummy_rmse), mean(linear_rmse), best_ridge$Mean_RMSE_USD),
+  SD_RMSE_USD = c(sd(dummy_rmse), sd(linear_rmse), best_ridge$SD_RMSE_USD)
+)
+model_comparison |> arrange(Mean_RMSE_USD)
+best_lambda
+```
+
+Table 7. Comparison of the three models on the same training-data folds.
+
+## Final test evaluation
+
+```{r}
+final_model <- lm(estimated_restaurant_net_margin_usd ~ ., data = orders_train)
+test_predictions <- predict(final_model, newdata = orders_test)
+dummy_predictions <- rep(mean(orders_train$estimated_restaurant_net_margin_usd),
+                         nrow(orders_test))
+test_margin <- orders_test$estimated_restaurant_net_margin_usd
+
+test_scores <- data.frame(
+  Model = c("Linear regression", "Mean baseline"),
+  RMSE_USD = c(sqrt(mean((test_margin - test_predictions)^2)),
+               sqrt(mean((test_margin - dummy_predictions)^2))),
+  MAE_USD = c(mean(abs(test_margin - test_predictions)),
+              mean(abs(test_margin - dummy_predictions))),
+  R_squared = c(1 - sum((test_margin - test_predictions)^2) /
+                  sum((test_margin - mean(test_margin))^2),
+                1 - sum((test_margin - dummy_predictions)^2) /
+                  sum((test_margin - mean(test_margin))^2))
+)
+test_scores
+```
+
+Table 8. Final performance on the held-out test orders.
+
+```{r}
+x_train <- model.matrix(final_model)[, -1]
+x_test <- model.matrix(
+  delete.response(terms(final_model)), data = orders_test,
+  contrasts.arg = final_model$contrasts, xlev = final_model$xlevels
+)[, -1]
+final_ridge <- glmnet(
+  x_train, orders_train$estimated_restaurant_net_margin_usd,
+  alpha = 0, lambda = lambdas, standardize = TRUE
+)
+ridge_predictions <- as.numeric(predict(final_ridge, newx = x_test, s = best_lambda))
+```
+
+```{r}
+#| fig-cap: "Test predictions from all three models. The dashed line represents perfect predictions. Linear and Ridge predictions nearly overlap; Ridge uses the penalty selected by training-data cross-validation."
+#| fig-width: 8
+#| fig-height: 6
+data.frame(
+  actual_margin = test_margin,
+  `Dummy baseline` = dummy_predictions,
+  `Linear regression` = test_predictions,
+  `Ridge regression` = ridge_predictions,
+  check.names = FALSE
+) |>
+  pivot_longer(-actual_margin, names_to = "Model", values_to = "Prediction") |>
+  ggplot(aes(x = actual_margin, y = Prediction, colour = Model, shape = Model)) +
+  geom_point(alpha = 0.5, size = 1.5) +
+  scale_colour_manual(values = c("Dummy baseline" = "#009E73",
+                                 "Linear regression" = "#0072B2",
+                                 "Ridge regression" = "#D55E00")) +
+  scale_shape_manual(values = c("Dummy baseline" = 16,
+                                "Linear regression" = 1,
+                                "Ridge regression" = 3)) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed") +
+  coord_equal() +
+  theme(legend.position = "bottom") +
+  labs(x = "Dataset-estimated net margin (USD)", y = "Predicted net margin (USD)")
+```
 
 # References
 
