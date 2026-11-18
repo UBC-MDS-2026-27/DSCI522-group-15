@@ -44,8 +44,6 @@ Install the following on Windows or macOS:
 
 ## Reproduce the analysis (Windows and macOS)
 
-These steps assume that the repository contains the committed `.Rprofile`, `renv/activate.R`, `renv/settings.json`, and `renv.lock` files described above.
-
 ### 1. Open the repository root
 
 Download or clone the repository, and **open its root folder**, not the `analysis/` subfolder. In RStudio, use **File > New Project > Existing Directory** to select this folder if you do not already have an `.Rproj` file. Confirm that the R Console shows the repository root when you run:
