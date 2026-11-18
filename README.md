@@ -132,7 +132,7 @@ After a successful render, check that:
 1. The HTML output exists and includes the results and plots.
 2. Both processed CSV files exist and have 6,400 and 1,600 rows, respectively.
 3. `renv::status()` reports that the project environment is synchronized.
-4. The render completes on **both Windows and macOS** using a clean checkout and the steps above.
+4. The render completes on both Windows and macOS using a clean checkout and the steps above.
 
 You can check the processed CSV row counts in the R Console:
 
@@ -148,19 +148,6 @@ nrow(read.csv("data/processed/orders_test.csv"))
 - **Data download fails:** Follow the manual data-download steps above, then render again. The report skips downloading if the expected raw CSV is already present.
 - **An unexpected file path is reported:** Run the documented render command from the repository root. The `.qmd` itself uses `../data/...` paths relative to its location in `analysis/`.
 - **Different results across computers:** Verify the raw CSV checksum, ensure the same `renv.lock` was restored, and confirm the R and Quarto versions. Pin the Kaggle dataset version in the report's download URL before submission.
-
-## Maintainer setup (one time before submission)
-
-If this is the first time the team is adding `renv` and **`renv.lock` does not exist yet**, open the repository root as an RStudio project and run these commands **once** in the R Console:
-
-```r
-install.packages("renv", repos = "https://cloud.r-project.org")
-renv::init(bare = TRUE, restart = FALSE)
-renv::install(c("tidyverse", "glmnet", "rmarkdown"))
-renv::snapshot(type = "all", prompt = FALSE)
-```
-
-Commit `renv.lock`, `.Rprofile`, `renv/activate.R`, and `renv/settings.json` along with this README and the `.qmd` source. Keep the local `renv/library/` and `renv/staging/` directories out of Git. On another computer, **restore the committed lockfile** as in Step 2; do not rerun the one-time initialization. Before submitting, test the entire workflow on a freshly cloned copy on Windows and on macOS.
 
 ## Data source and attribution
 
