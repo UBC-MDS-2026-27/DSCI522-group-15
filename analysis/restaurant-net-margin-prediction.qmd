@@ -1,6 +1,6 @@
 ---
 title: "Predicting restaurant net margin from food delivery orders"
-author: "TODO: add team members' names"
+author: "Jerry Jin, Afrah Zilani, Jerry Zeng"
 format:
   html:
     embed-resources: true
@@ -448,19 +448,6 @@ test_scores
 ```
 
 Table 8. Final performance on the held-out test orders.
-
-```{r}
-x_train <- model.matrix(final_model)[, -1]
-x_test <- model.matrix(
-  delete.response(terms(final_model)), data = orders_test,
-  contrasts.arg = final_model$contrasts, xlev = final_model$xlevels
-)[, -1]
-final_ridge <- glmnet(
-  x_train, orders_train$estimated_restaurant_net_margin_usd,
-  alpha = 0, lambda = lambdas, standardize = TRUE
-)
-ridge_predictions <- as.numeric(predict(final_ridge, newx = x_test, s = best_lambda))
-```
 
 This is your **Actual vs. Predicted Net Margin** plot below. Overall, it suggests that both regression models are predicting the target much more accurately than the dummy baseline.
 
