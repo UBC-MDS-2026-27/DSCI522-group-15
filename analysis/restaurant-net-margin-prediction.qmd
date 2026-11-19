@@ -15,25 +15,93 @@ theme_set(theme_minimal())
 set.seed(522)
 ```
 
-# Summary
+# 1. Summary
 
+This project investigates how accurately restaurant net margins can be predicted using information available when a food order is placed. Using the Global Food Delivery and Restaurant Market 2026 dataset, which contains 8,000 orders across multiple cities, we examine the relationship between order characteristics, including order value, discounts, delivery distance, restaurant price tier, and order channel, and estimated restaurant net margin. We use regression modelling, comparing a mean baseline, multiple linear regression, and ridge regression, with root mean squared error (RMSE) as the primary evaluation metric. The dataset contains substantial variation in estimated margins, including some loss-making orders, suggesting that profitability prediction may provide useful business insights. However, the predictive performance must be established using the held out test data. The main limitations are that the dataset contains estimated rather than observed financial margins, may reflect synthetic or rule-based relationships, and does not include detailed restaurant operating costs.
 
+# 2. Introduction
 
-# Introduction
+How accurately can we predict an order's estimated restaurant net margin in US dollars using information available when the order is placed?
 
-How accurately can we predict an order's estimated restaurant net margin in
-US dollars using information available when the order is placed?
+### **2.1 Background**
 
+The growth of online food delivery platforms has changed how restaurants receive orders and interact with customers. Restaurants can now receive orders through delivery applications, takeaway services, and dinein point of sale systems. Although these channels create additional revenue opportunities, they also introduce different costs and financial considerations.
 
+Restaurant profitability depends on several factors, including order value, promotional discounts, delivery-related expenses, restaurant pricing strategies, and operational conditions. For example, a restaurant may receive a large number of orders but generate relatively low margins if it offers substantial discounts or incurs high fulfilment costs. Similarly, restaurants operating in different cities or cuisine categories may experience different revenue and cost structures.
 
-# Methods
+Data analysis and predictive modelling can help businesses understand these relationships. Regression models are particularly useful when the objective is to estimate a continuous numerical outcome, such as the expected net margin from an individual order.
+
+### **2.2 Research Motivation and Significance**
+
+Understanding restaurant profitability is important for both restaurant owners and food delivery platforms. Restaurants need to determine whether their pricing strategies, promotional campaigns, and order channels contribute positively to their financial performance.
+
+Predicting order level margins could help businesses identify orders that are likely to generate lower returns. This information could support decisions about discount allocation, pricing adjustments, and the selection of appropriate promotional strategies.
+
+Furthermore, identifying relationships between order characteristics and estimated profitability can provide insights into differences between cities, restaurant categories, and ordering channels. Rather than relying exclusively on historical averages, predictive modelling provides an opportunity to estimate financial outcomes using multiple order characteristics simultaneously.
+
+This project therefore applies regression techniques to investigate whether information available at the time an order is placed can provide useful predictions of restaurant net margin.
+
+### **2.3 Research Question**
+
+The central research question is:
+
+**How accurately can we predict an order's estimated restaurant net margin in US dollars using information available when the order is placed?**
+
+The analysis also investigates whether order value, discounts, delivery distance, restaurant price tier, and ordering channel are associated with differences in estimated restaurant profitability.
+
+### **2.4 Dataset Description**
+
+The analysis uses the [***Global Food Delivery and Restaurant Market 2026***](https://www.kaggle.com/datasets/luthfimuthathohirin/global-food-delivery-restaurant-market-2026/data) dataset, published by Luthfi Muthathohirin on Kaggle. The dataset is publicly available through Kaggle and contains 8,000 food delivery orders represented by 26 variables. Each row represents an individual restaurant order, rather than a restaurant or customer. The dataset includes information about geographical markets, cuisine categories, ordering channels, order values, discounts, delivery conditions, customer ratings, and estimated restaurant profitability.
+
+The dataset includes both numerical and categorical variables. Numerical variables include order value, discount amount, delivery distance, preparation time, delivery fee, and estimated restaurant net margin. Categorical variables include metropolitan city, cuisine category, order channel, restaurant price tier, and weather condition.
+
+For this analysis, we use the following explanatory variables:
+
+- Order value, measured in US dollars.
+
+- Discount applied, measured in US dollars.
+
+- Delivery distance, measured in kilometres.
+
+- Estimated preparation time, measured in minutes.
+
+- Delivery fee, measured in US dollars.
+
+- Metropolitan city.
+
+- Cuisine category.
+
+- Order channel.
+
+- Restaurant price tier.
+
+- Peak-hour status.
+
+- Weather condition.
+
+These variables were selected because they describe characteristics that may be available when an order is placed and could be associated with restaurant profitability.
+
+### **2.5 Target Variable**
+
+The response variable is **estimated restaurant net margin**, measured in US dollars per order.
+
+This variable represents the dataset's estimate of the net financial margin associated with an individual order. It is a continuous numerical variable, making regression an appropriate modelling approach.
+
+The target variable can take both positive and negative values. Positive values indicate an estimated positive margin, while negative values indicate an estimated loss for an order.
+
+The objective is to estimate this value using the selected order characteristics. Customer satisfaction measures, actual delivery outcomes, and variables generated after the order is completed are excluded to reduce the risk of information leakage.
+
+# 3. Methods
+
+### **3.1 Data Source and Download**
+
+The dataset was obtained from Kaggle and downloaded directly from its original source using the Kaggle dataset download endpoint. The downloaded file was stored in the `data/raw/` directory to preserve the original dataset. The analysis was conducted using R, with the `tidyverse` package for data manipulation and visualization and the `glmnet` package for ridge regression.
+
+The original dataset was imported into R using the `read_csv()` function. The processed training and test datasets were subsequently saved in the `data/processed/` directory to maintain a reproducible data workflow.
 
 ## Data
 
-We use the [Global Food Delivery & Restaurant Market 2026 dataset](https://www.kaggle.com/datasets/luthfimuthathohirin/global-food-delivery-restaurant-market-2026).
-Our target is estimated restaurant net margin per order, measured in US dollars.
-
-
+We use the [Global Food Delivery & Restaurant Market 2026 dataset](https://www.kaggle.com/datasets/luthfimuthathohirin/global-food-delivery-restaurant-market-2026). Our target is estimated restaurant net margin per order, measured in US dollars.
 
 ```{r}
 # Create data folders.
@@ -58,7 +126,33 @@ if (!file.exists(raw_file)) {
 orders <- read_csv(raw_file, show_col_types = FALSE)
 ```
 
+### **3.2 Data Cleaning and Preprocessing**
+
+The dataset was inspected to understand its structure, variable types, and completeness. Missing values were examined using column wise counts, and duplicate order identifiers were checked to identify potential repeated observations.
+
+The analysis retained the selected explanatory variables and the estimated restaurant net margin response variable. Identifiers and variables that could introduce information leakage, such as customer satisfaction outcomes and post-order delivery measurements, were excluded.
+
+Categorical variables were retained as factors for regression modelling, while numerical variables were used in their original measurement units. No imputation was required if the training data contained no missing observations.
+
+### **3.3 Feature Selection**
+
+Feature selection was guided by the research question and the availability of information at the time an order was placed.
+
+The selected explanatory variables included order value, discount amount, delivery distance, estimated preparation time, delivery fee, metropolitan city, cuisine category, order channel, restaurant price tier, peak-hour status, and weather condition.
+
+These variables represent financial, geographical, operational, and market-related characteristics that could influence the estimated profitability of an order.
+
+Variables such as actual delivery time, customer rating, customer satisfaction tier, and customer satisfaction drivers were excluded because they may only become available after an order has been completed. Derived variables and narrative descriptions were also excluded to reduce redundancy and potential information leakage.
+
 ## Analysis
+
+### **3.4 Training and Test Data Split**
+
+The original dataset was randomly divided into training and test sets using an 80:20 split. This resulted in 6,400 observations for training and 1,600 observations for testing.
+
+The split was performed before exploratory data analysis and preprocessing to ensure that the test dataset remained independent of the modelling and feature-selection decisions. A random seed of 522 was used to make the results reproducible.
+
+The training dataset was used for exploratory analysis, model development, and cross-validation. The test dataset was reserved for the final evaluation of predictive performance.
 
 ```{r}
 # Split before exploration and preprocessing.
@@ -89,10 +183,17 @@ write_csv(orders_train, "../data/processed/orders_train.csv")
 write_csv(orders_test, "../data/processed/orders_test.csv")
 ```
 
-
-# Results & Discussion
+# 4 . Results & Discussion
 
 ## Training data exploration
+
+### **Exploratory Data Analysis**
+
+Exploratory data analysis was performed using only the training dataset. The analysis examined the distribution of estimated restaurant net margins and investigated the relationships between profitability and selected explanatory variables.
+
+Descriptive statistics, including the mean, median, minimum, maximum, and standard deviation, were calculated for the response variable. The number and percentage of orders with negative estimated margins were also examined to understand the frequency of potentially loss-making orders.
+
+Categorical variables were summarized to understand the distribution of orders across cities, cuisines, ordering channels, restaurant price tiers, and weather conditions.
 
 ```{r}
 data.frame(
@@ -132,6 +233,12 @@ data.frame(
 
 Table 3. Estimated net margin in the training data.
 
+### **Data Visualization**
+
+Several visualizations were created to investigate the characteristics of restaurant profitability.
+
+A histogram was used to examine the distribution of estimated restaurant net margins and identify whether the data contained negative values or unusually high margins.
+
 ```{r}
 #| fig-cap: "Distribution of estimated restaurant net margin in the training data."
 #| fig-width: 7
@@ -141,6 +248,8 @@ ggplot(orders_train, aes(x = estimated_restaurant_net_margin_usd)) +
   geom_vline(xintercept = 0, linetype = "dashed") +
   labs(x = "Estimated net margin (USD)", y = "Number of orders")
 ```
+
+Scatterplots were used to investigate the relationships between order value, discount amount, and estimated restaurant net margin. These visualizations helped identify potential linear relationships and unusual observations.
 
 ```{r}
 #| fig-cap: "Estimated net margin versus order value and discount in the training data."
@@ -158,6 +267,8 @@ orders_train |>
   labs(x = "Amount (USD)", y = "Estimated net margin (USD)")
 ```
 
+A box plot was also used to compare estimated restaurant net margins across different ordering channels. This provided an opportunity to examine differences in profitability between online delivery, takeaway or pickup, and dine-in orders.
+
 ```{r}
 #| fig-cap: "Estimated net margin by order channel in the training data."
 #| fig-width: 8
@@ -168,8 +279,17 @@ ggplot(orders_train,
   labs(x = "Estimated net margin (USD)", y = "Order channel")
 ```
 
+## **Regression Models**
 
-## Dummy regression baseline
+Three regression approaches were considered to predict estimated restaurant net margin.
+
+## Dummy regression baseline :
+
+**Mean baseline model**
+
+A mean baseline model was used as a reference point. It predicts the average restaurant net margin calculated from the training observations for every order in the validation or test dataset.
+
+This model provides a simple benchmark against which more complex regression models can be compared.
 
 ```{r}
 set.seed(522)
@@ -193,7 +313,11 @@ data.frame(
 
 Table 4. Five-fold cross-validation performance of the dummy model.
 
-## Linear regression
+## Linear regression :
+
+Multiple linear regression was used to estimate the relationship between estimated restaurant net margin and multiple explanatory variables simultaneously.
+
+The model includes both numerical and categorical predictors. It was selected because it provides an interpretable approach for understanding how different order characteristics are associated with the predicted response variable.
 
 ```{r}
 linear_rmse <- numeric(5)
@@ -218,7 +342,13 @@ data.frame(
 
 Table 5. Model performance using the same five cross-validation folds.
 
-## Ridge regression
+## Ridge regression :
+
+Ridge regression was included as a regularized alternative to ordinary linear regression. It applies an L2 penalty to the regression coefficients, shrinking their magnitude to reduce model complexity and potentially improve generalization.
+
+The `glmnet` package was used to fit the ridge regression models. Different values of the regularization parameter, lambda, were evaluated using five-fold cross-validation on the training dataset. The lambda value producing the lowest average validation RMSE was selected.
+
+Regularization is particularly useful when predictors are correlated or when a model contains several explanatory variables
 
 ```{r}
 lambdas <- 10^seq(2, -5, by = -1)
@@ -273,7 +403,17 @@ best_lambda
 
 Table 7. Comparison of the three models on the same training-data folds.
 
-## Final test evaluation
+## Final test evaluation:
+
+Root mean squared error (RMSE) was selected as the primary evaluation metric. RMSE measures the average magnitude of prediction errors while assigning greater importance to larger errors because the differences are squared before averaging.
+
+The metric is expressed in the same units as the response variable, making it interpretable in US dollars. A lower RMSE indicates better predictive performance.
+
+Mean absolute error (MAE) was also used in the final test evaluation. MAE measures the average absolute difference between predicted and actual estimated margins and is less sensitive to unusually large prediction errors.
+
+The coefficient of determination (R-squared) was used to examine the proportion of variation in the response variable explained by the model.
+
+Model selection was performed using five-fold cross-validation within the training dataset. The final test data set was used only after model selection to obtain an independent estimate of predictive performance. This separation is important because allowing test information to influence modelling decisions can result in overly optimistic performance estimates
 
 ```{r}
 final_model <- lm(estimated_restaurant_net_margin_usd ~ ., data = orders_train)
@@ -282,17 +422,28 @@ dummy_predictions <- rep(mean(orders_train$estimated_restaurant_net_margin_usd),
                          nrow(orders_test))
 test_margin <- orders_test$estimated_restaurant_net_margin_usd
 
-test_scores <- data.frame(
-  Model = c("Linear regression", "Mean baseline"),
-  RMSE_USD = c(sqrt(mean((test_margin - test_predictions)^2)),
-               sqrt(mean((test_margin - dummy_predictions)^2))),
-  MAE_USD = c(mean(abs(test_margin - test_predictions)),
-              mean(abs(test_margin - dummy_predictions))),
-  R_squared = c(1 - sum((test_margin - test_predictions)^2) /
-                  sum((test_margin - mean(test_margin))^2),
-                1 - sum((test_margin - dummy_predictions)^2) /
-                  sum((test_margin - mean(test_margin))^2))
+x_train <- model.matrix(estimated_restaurant_net_margin_usd ~ ., data = orders_train)[, -1]
+y_train <- orders_train$estimated_restaurant_net_margin_usd
+x_test <- model.matrix(estimated_restaurant_net_margin_usd ~ ., data = orders_test)[, -1]
+
+final_ridge <- glmnet(x_train, y_train, alpha = 0, lambda = best_lambda)
+ridge_predictions <- as.numeric(predict(final_ridge, newx = x_test, s = best_lambda))
+
+score_model <- function(predictions) {
+  data.frame(
+    RMSE_USD = sqrt(mean((test_margin - predictions)^2)),
+    MAE_USD = mean(abs(test_margin - predictions)),
+    R_squared = 1 - sum((test_margin - predictions)^2) /
+      sum((test_margin - mean(test_margin))^2)
+  )
+}
+
+test_scores <- bind_rows(
+  cbind(Model = "Mean baseline", score_model(dummy_predictions)),
+  cbind(Model = "Linear regression", score_model(test_predictions)),
+  cbind(Model = "Ridge regression", score_model(ridge_predictions))
 )
+
 test_scores
 ```
 
@@ -310,6 +461,8 @@ final_ridge <- glmnet(
 )
 ridge_predictions <- as.numeric(predict(final_ridge, newx = x_test, s = best_lambda))
 ```
+
+This is your **Actual vs. Predicted Net Margin** plot below. Overall, it suggests that both regression models are predicting the target much more accurately than the dummy baseline.
 
 ```{r}
 #| fig-cap: "Test predictions from all three models. The dashed line represents perfect predictions. Linear and Ridge predictions nearly overlap; Ridge uses the penalty selected by training-data cross-validation."
@@ -337,5 +490,72 @@ data.frame(
   labs(x = "Dataset-estimated net margin (USD)", y = "Predicted net margin (USD)")
 ```
 
+- **Dashed diagonal line:** Perfect predictions. A point on this line means predicted margin equals actual margin.
+
+- **Blue circles: Linear regression:** Most points lie close to the diagonal, indicating strong predictive performance.
+
+- **Orange crosses: Ridge regression:** These overlap closely with the linear regression predictions, suggesting similar performance.
+
+- **Green dots: Dummy baseline:** Predictions are almost constant, around the average training margin, regardless of the actual margin.
+
+# **5. Discussion**
+
+### **5.1 Summary of Key Findings**
+
+This project investigated whether estimated restaurant net margins could be predicted using characteristics available when a food delivery order is placed. The analysis considered order value, discounts, delivery distance, preparation time, delivery fees, restaurant price tier, ordering channel, and other market related variables.
+
+The exploratory analysis examined the distribution of estimated margins and their relationships with selected explanatory variables. Three regression approaches were considered: a mean baseline, multiple linear regression, and ridge regression.
+
+The final findings will indicate which regression approach provides the most accurate predictions based on the held out test data set. The comparison will also help determine whether including order characteristics improves prediction accuracy compared with simply predicting the average margin.
+
+### **5.2 Business Implications**
+
+Predicting estimated restaurant net margins could provide useful information for restaurants and food delivery platforms.
+
+If the model can identify orders associated with lower estimated margins, businesses could investigate their discounting policies, pricing strategies, and order characteristics. For example, restaurants may use margin predictions to evaluate whether certain promotional discounts are financially sustainable.
+
+Differences in estimated margins across ordering channels could also help restaurants understand how their sales channels are associated with profitability. These insights could support decisions about promotional investments and operational planning.
+
+However, the model should be treated as a decision support tool rather than a replacement for detailed financial accounting.
+
+### **5.3 Comparison with Initial Expectations**
+
+The initial expectation was that order value and discount amount would be important predictors of estimated restaurant net margin. Higher-value orders were expected to be associated with higher margins, while larger discounts were expected to reduce the estimated financial return.
+
+It was also expected that ordering channels, delivery distance, and restaurant price tiers might contribute to differences in profitability.
+
+The exploratory visualizations and regression coefficients will help determine whether these expectations are supported by the data set. The final interpretation is based on the actual model results rather than assumptions about the direction or strength of these relationships.
+
+### **5.4 Assumptions and Limitations**
+
+Several limitations should be considered when interpreting the findings.
+
+**First**, the response variable represents estimated restaurant net margin rather than verified financial profit. The dataset does not provide detailed accounting information about ingredient costs, labour expenses, rent, taxes, and other restaurant operating costs. Therefore, the predictions cannot be interpreted as actual restaurant profit.
+
+**Second**, the analysis assumes that the selected explanatory variables are available when an order is placed. This assumption is important because using information generated after order completion could introduce data leakage and produce unrealistically optimistic results.
+
+**Third**, the dataset includes orders from different cities and restaurant categories, but it does not provide detailed information about individual restaurant characteristics or their financial operations. Consequently, the model may not capture all factors influencing profitability.
+
+**Fourth**, linear regression assumes that the relationship between the explanatory variables and the response variable can be adequately represented by a linear function. Ridge regression can reduce coefficient magnitudes through regularization, but it does not automatically account for nonlinear relationships.
+
+**Finally**, the dataset's documentation does not establish whether the estimated margins represent independently observed financial outcomes or values generated through predefined assumptions. This limits the extent to which the findings can be generalized to real-world restaurant operations.
+
+### **5.6 Future Research Directions**
+
+Future research could improve the analysis by incorporating more detailed restaurant-level financial information, including ingredient costs, labor expenses, packaging costs, platform commissions, and other operating expenses.
+
+Additional modelling approaches, such as decision tree regression, random forest regression, and gradient boosting, could also be evaluated to determine whether nonlinear models improve prediction accuracy.
+
+Another possible direction would be to investigate profitability differences across individual cities, cuisine categories, and restaurant price tiers.
+
+Finally, future studies could use real restaurant transaction and accounting data to validate whether the relationships identified in this data set are also observed in actual business operations.
+
 # References
 
+1.  Muthathohirin, L. (2026). *Global Food Delivery & Restaurant Market 2026* \[Data set\]. Kaggle.
+
+    <https://www.kaggle.com/datasets/luthfimuthathohirin/global-food-delivery-restaurant-market-2026>
+
+2.  James, G., Witten, D., Hastie, T., & Tibshirani, R. (2021). *An introduction to statistical learning: With applications in R* (2nd ed.). Springer. <https://link.springer.com/chapter/10.1007/978-1-0716-1418-1_3>
+
+3.  Rosenblatt, M., Tejavibulya, L., Jiang, R., Noble, S., et al. (2024). Data leakage inflates prediction performance in connectome-based machine learning models. *Nature Communications, 15*, 1829. <https://www.nature.com/articles/s41467-024-46150-w>
