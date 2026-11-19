@@ -37,7 +37,7 @@ The report creates `data/raw/` and `data/processed/` if they do not exist, downl
 
 Install the following on Windows or macOS:
 
-1. [R](https://cran.r-project.org/) **4.1 or newer** 
+1. [R](https://cran.r-project.org/) **4.6.1** 
 2. [Quarto CLI](https://quarto.org/docs/get-started/) to render the `.qmd` report.
 3. [RStudio Desktop](https://posit.co/download/rstudio-desktop/) (recommended, but optional), or another terminal/editor that can run R and Quarto.
 4. Internet access for the initial R package installation and, if the raw CSV is absent, the Kaggle dataset download.
