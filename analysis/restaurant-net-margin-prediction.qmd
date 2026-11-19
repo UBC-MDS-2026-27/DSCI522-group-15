@@ -449,8 +449,6 @@ test_scores
 
 Table 8. Final performance on the held-out test orders.
 
-Table 8. Final performance on the held-out test orders.
-
 ```{r}
 x_train <- model.matrix(final_model)[, -1]
 x_test <- model.matrix(
@@ -499,25 +497,6 @@ data.frame(
 - **Orange crosses: Ridge regression:** These overlap closely with the linear regression predictions, suggesting similar performance.
 
 - **Green dots: Dummy baseline:** Predictions are almost constant, around the average training margin, regardless of the actual margin.
-
-  ```{r}
-  score_model <- function(predictions) {
-    data.frame(
-      RMSE_USD = sqrt(mean((test_margin - predictions)^2)),
-      MAE_USD = mean(abs(test_margin - predictions)),
-      R_squared = 1 - sum((test_margin - predictions)^2) /
-        sum((test_margin - mean(test_margin))^2)
-    )
-  }
-
-  test_scores <- bind_rows(
-    cbind(Model = "Mean baseline", score_model(dummy_predictions)),
-    cbind(Model = "Linear regression", score_model(test_predictions)),
-    cbind(Model = "Ridge regression", score_model(ridge_predictions))
-  )
-
-  test_scores
-  ```
 
 # **5. Discussion**
 
