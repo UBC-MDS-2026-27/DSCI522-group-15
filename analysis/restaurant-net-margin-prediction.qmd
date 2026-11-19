@@ -121,6 +121,11 @@ if (!file.exists(raw_file)) {
 
 ```
 
+```{r}
+# Read the data.
+orders <- read_csv(raw_file, show_col_types = FALSE)
+```
+
 ### **3.2 Data Cleaning and Preprocessing**
 
 The dataset was inspected to understand its structure, variable types, and completeness. Missing values were examined using column wise counts, and duplicate order identifiers were checked to identify potential repeated observations.
@@ -128,11 +133,6 @@ The dataset was inspected to understand its structure, variable types, and compl
 The analysis retained the selected explanatory variables and the estimated restaurant net margin response variable. Identifiers and variables that could introduce information leakage, such as customer satisfaction outcomes and post-order delivery measurements, were excluded.
 
 Categorical variables were retained as factors for regression modelling, while numerical variables were used in their original measurement units. No imputation was required if the training data contained no missing observations.
-
-```{r}
-# Read the data.
-orders <- read_csv(raw_file, show_col_types = FALSE)
-```
 
 ### **3.3 Feature Selection**
 
@@ -187,7 +187,7 @@ write_csv(orders_test, "../data/processed/orders_test.csv")
 
 ## Training data exploration
 
-###  **Exploratory Data Analysis**
+### **Exploratory Data Analysis**
 
 Exploratory data analysis was performed using only the training dataset. The analysis examined the distribution of estimated restaurant net margins and investigated the relationships between profitability and selected explanatory variables.
 
@@ -231,13 +231,13 @@ data.frame(
 )
 ```
 
+Table 3. Estimated net margin in the training data.
+
 ### **Data Visualization**
 
 Several visualizations were created to investigate the characteristics of restaurant profitability.
 
 A histogram was used to examine the distribution of estimated restaurant net margins and identify whether the data contained negative values or unusually high margins.
-
-Table 3. Estimated net margin in the training data.
 
 ```{r}
 #| fig-cap: "Distribution of estimated restaurant net margin in the training data."
@@ -384,34 +384,21 @@ ridge_results <- data.frame(
 ridge_results |> arrange(Mean_RMSE_USD)
 ```
 
-```{r}
-
-```
-
 Table 6. Ridge penalties compared using five-fold cross-validation.
 
-## Model comparison 
+## Model comparison
 
 ```{r}
-score_model <- function(predictions) {
-  data.frame(
-    RMSE_USD = sqrt(mean((test_margin - predictions)^2)),
-    MAE_USD = mean(abs(test_margin - predictions)),
-    R_squared = 1 - sum((test_margin - predictions)^2) /
-      sum((test_margin - mean(test_margin))^2)
-  )
-}
+best_ridge <- ridge_results |> slice_min(Mean_RMSE_USD, n = 1, with_ties = FALSE)
+best_lambda <- best_ridge$Lambda
 
-test_scores <- bind_rows(
-  cbind(Model = "Mean baseline",
-        score_model(dummy_predictions)),
-  cbind(Model = "Linear regression",
-        score_model(test_predictions)),
-  cbind(Model = "Ridge regression",
-        score_model(ridge_predictions))
+model_comparison <- data.frame(
+  Model = c("Mean baseline", "Linear regression", "Ridge regression"),
+  Mean_RMSE_USD = c(mean(dummy_rmse), mean(linear_rmse), best_ridge$Mean_RMSE_USD),
+  SD_RMSE_USD = c(sd(dummy_rmse), sd(linear_rmse), best_ridge$SD_RMSE_USD)
 )
-
-test_scores
+model_comparison |> arrange(Mean_RMSE_USD)
+best_lambda
 ```
 
 Table 7. Comparison of the three models on the same training-data folds.
@@ -435,19 +422,32 @@ dummy_predictions <- rep(mean(orders_train$estimated_restaurant_net_margin_usd),
                          nrow(orders_test))
 test_margin <- orders_test$estimated_restaurant_net_margin_usd
 
-test_scores <- data.frame(
-  Model = c("Linear regression", "Mean baseline"),
-  RMSE_USD = c(sqrt(mean((test_margin - test_predictions)^2)),
-               sqrt(mean((test_margin - dummy_predictions)^2))),
-  MAE_USD = c(mean(abs(test_margin - test_predictions)),
-              mean(abs(test_margin - dummy_predictions))),
-  R_squared = c(1 - sum((test_margin - test_predictions)^2) /
-                  sum((test_margin - mean(test_margin))^2),
-                1 - sum((test_margin - dummy_predictions)^2) /
-                  sum((test_margin - mean(test_margin))^2))
+x_train <- model.matrix(estimated_restaurant_net_margin_usd ~ ., data = orders_train)[, -1]
+y_train <- orders_train$estimated_restaurant_net_margin_usd
+x_test <- model.matrix(estimated_restaurant_net_margin_usd ~ ., data = orders_test)[, -1]
+
+final_ridge <- glmnet(x_train, y_train, alpha = 0, lambda = best_lambda)
+ridge_predictions <- as.numeric(predict(final_ridge, newx = x_test, s = best_lambda))
+
+score_model <- function(predictions) {
+  data.frame(
+    RMSE_USD = sqrt(mean((test_margin - predictions)^2)),
+    MAE_USD = mean(abs(test_margin - predictions)),
+    R_squared = 1 - sum((test_margin - predictions)^2) /
+      sum((test_margin - mean(test_margin))^2)
+  )
+}
+
+test_scores <- bind_rows(
+  cbind(Model = "Mean baseline", score_model(dummy_predictions)),
+  cbind(Model = "Linear regression", score_model(test_predictions)),
+  cbind(Model = "Ridge regression", score_model(ridge_predictions))
 )
+
 test_scores
 ```
+
+Table 8. Final performance on the held-out test orders.
 
 Table 8. Final performance on the held-out test orders.
 
@@ -500,6 +500,25 @@ data.frame(
 
 - **Green dots: Dummy baseline:** Predictions are almost constant, around the average training margin, regardless of the actual margin.
 
+  ```{r}
+  score_model <- function(predictions) {
+    data.frame(
+      RMSE_USD = sqrt(mean((test_margin - predictions)^2)),
+      MAE_USD = mean(abs(test_margin - predictions)),
+      R_squared = 1 - sum((test_margin - predictions)^2) /
+        sum((test_margin - mean(test_margin))^2)
+    )
+  }
+
+  test_scores <- bind_rows(
+    cbind(Model = "Mean baseline", score_model(dummy_predictions)),
+    cbind(Model = "Linear regression", score_model(test_predictions)),
+    cbind(Model = "Ridge regression", score_model(ridge_predictions))
+  )
+
+  test_scores
+  ```
+
 # **5. Discussion**
 
 ### **5.1 Summary of Key Findings**
@@ -526,7 +545,7 @@ The initial expectation was that order value and discount amount would be import
 
 It was also expected that ordering channels, delivery distance, and restaurant price tiers might contribute to differences in profitability.
 
-The exploratory visualizations and regression coefficients will help determine whether these expectations are supported by the data set. The final interpretation should be based on the actual model results rather than assumptions about the direction or strength of these relationships.
+The exploratory visualizations and regression coefficients will help determine whether these expectations are supported by the data set. The final interpretation is based on the actual model results rather than assumptions about the direction or strength of these relationships.
 
 ### **5.4 Assumptions and Limitations**
 
@@ -559,7 +578,5 @@ Finally, future studies could use real restaurant transaction and accounting dat
     <https://www.kaggle.com/datasets/luthfimuthathohirin/global-food-delivery-restaurant-market-2026>
 
 2.  James, G., Witten, D., Hastie, T., & Tibshirani, R. (2021). *An introduction to statistical learning: With applications in R* (2nd ed.). Springer. <https://link.springer.com/chapter/10.1007/978-1-0716-1418-1_3>
-
-<!-- -->
 
 3.  Rosenblatt, M., Tejavibulya, L., Jiang, R., Noble, S., et al. (2024). Data leakage inflates prediction performance in connectome-based machine learning models. *Nature Communications, 15*, 1829. <https://www.nature.com/articles/s41467-024-46150-w>
