@@ -1,6 +1,6 @@
 # Predicting Restaurant Net Margin from Food Delivery Orders
 
-**DSCI 522 — Group 15 | Milestone 1**
+**DSCI 522 - Group 15 | Milestone 1**
 
 ## Authors
 * **Jerry Jin**
