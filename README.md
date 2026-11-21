@@ -8,7 +8,7 @@
 * **Jerry Zeng**
 
 ## Report Link
-[Predicting Restaurant Net Margin from Food Delivery Orders](https://ubc-mds-2026-27.github.io/DSCI522-group-15/)
+[Predicting Restaurant Net Margin from Food Delivery Orders](https://ubc-mds-2026-27.github.io/DSCI522-group-15/analysis/restaurant-net-margin-prediction.html)
 
 ## AI use statement
 AI was used purely for debugging codes and provide guidance to structuring and formatting the files, none were used to generate lines of codes. ChatGPT was used.
