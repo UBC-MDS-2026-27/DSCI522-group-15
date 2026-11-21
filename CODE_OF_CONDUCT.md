@@ -20,7 +20,7 @@ This Code of Conduct applies within project spaces, including GitHub issues, pul
 
 ## Enforcement
 
-Report abusive, harassing, or otherwise unacceptable behavior privately to the project team at [zheqijin@student.ubc.ca](mailto:zheqijin@student.ubc.ca). Include a description of the incident and relevant supporting information. Do not post sensitive reports in public GitHub issues.
+Report abusive, harassing, or otherwise unacceptable behavior privately to the project team at zheqijin@student.ubc.ca, afrahz@student.ubc.ca, jerry_zjw@outlook.com . Include a description of the incident and relevant supporting information. Do not post sensitive reports in public GitHub issues.
 
 The team will review reports, investigate fairly, and decide on appropriate corrective action. Reports will be handled confidentially, with information shared only as needed to investigate and address the incident. If the report concerns the designated contact, contact the DSCI 522 instructional team privately through the course's established communication channels instead.
 
