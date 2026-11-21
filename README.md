@@ -2,6 +2,17 @@
 
 **DSCI 522 — Group 15 | Milestone 1**
 
+## Authors
+* **Jerry Jin**
+* **Afrah Zilani**
+* **Jerry Zeng**
+
+## Report Link
+[Predicting Restaurant Net Margin from Food Delivery Orders](https://ubc-mds-2026-27.github.io/DSCI522-group-15/)
+
+## AI use statement
+AI was used purely for debugging codes and provide guidance to structuring and formatting the files, none were used to generate lines of codes. ChatGPT was used.
+
 ## Project overview
 
 The project investigates whether an order's estimated restaurant net margin (in USD) can be predicted from information available when a food delivery order is placed. We use the [Global Food Delivery Restaurant Market 2026 dataset](https://www.kaggle.com/datasets/luthfimuthathohirin/global-food-delivery-restaurant-market-2026/data) by Luthfi Muthathohirin.
@@ -152,3 +163,7 @@ nrow(read.csv("data/processed/orders_test.csv"))
 ## Data source and attribution
 
 Muthathohirin, L. *Global Food Delivery Restaurant Market 2026*. Kaggle. https://www.kaggle.com/datasets/luthfimuthathohirin/global-food-delivery-restaurant-market-2026/data
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
