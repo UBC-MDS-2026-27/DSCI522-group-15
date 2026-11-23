@@ -142,19 +142,6 @@ quarto render analysis/restaurant-net-margin-prediction.qmd
 
 Alternatively, open `analysis/restaurant-net-margin-prediction.qmd` in RStudio and click **Render**. The report currently has `execute: eval: true`, so Quarto executes its R chunks rather than merely displaying them.
 
-### 5. Running the analysis in the container
-
-To run this analysis, install Git and [Docker Desktop]([https://www.docker.com/products/docker-desktop/)](https://www.docker.com/products/docker-desktop/)) (or Docker Engine with Docker Compose) on Windows or macOS. All R packages and Quarto dependencies are already installed inside the container image referenced in \`docker-compose.yml\`.
-
-**Expected generated files:**
-
-- `analysis/restaurant-net-margin-prediction.html` — report containing the exploration, model comparison, and final test evaluation.
-- `data/raw/global_food_delivery_enriched_market_2026.csv` — source dataset, if it needed to be downloaded.
-- `data/processed/orders_train.csv` - 6,400 rows and 12 columns.
-- `data/processed/orders_test.csv` - 1,600 rows and 12 columns.
-
-Both processed files are produced **by the report**; do not manually substitute the pre-split CSVs for the raw dataset. Rendering again will regenerate the split with seed `522`, assuming the same input data and compatible R/package versions.
-
 ### 5. Verify the results
 
 After a successful render, check that:
@@ -170,6 +157,18 @@ You can check the processed CSV row counts in the R Console:
 nrow(read.csv("data/processed/orders_train.csv"))
 nrow(read.csv("data/processed/orders_test.csv"))
 ```
+### 6. Running the analysis in the container
+
+To run this analysis, install Git and [Docker Desktop]([https://www.docker.com/products/docker-desktop/)](https://www.docker.com/products/docker-desktop/)) (or Docker Engine with Docker Compose) on Windows or macOS. All R packages and Quarto dependencies are already installed inside the container image referenced in \`docker-compose.yml\`.
+
+**Expected generated files:**
+
+- `analysis/restaurant-net-margin-prediction.html` — report containing the exploration, model comparison, and final test evaluation.
+- `data/raw/global_food_delivery_enriched_market_2026.csv` — source dataset, if it needed to be downloaded.
+- `data/processed/orders_train.csv` - 6,400 rows and 12 columns.
+- `data/processed/orders_test.csv` - 1,600 rows and 12 columns.
+
+Both processed files are produced **by the report**; do not manually substitute the pre-split CSVs for the raw dataset. Rendering again will regenerate the split with seed `522`, assuming the same input data and compatible R/package versions.
 
 ## Troubleshooting
 
