@@ -1,11 +1,12 @@
 # Predicting Restaurant Net Margin from Food Delivery Orders
 
-**DSCI 522 - Group 15 | Milestone 1**
+**DSCI 522 - Group 15 \| Milestone 1, Milestone 2**
 
 ## Authors
-* **Jerry Jin**
-* **Afrah Zilani**
-* **Jerry Zeng**
+
+- **Jerry Jin**
+- **Afrah Zilani**
+- **Jerry Zeng**
 
 ## Published Report
 
@@ -14,6 +15,7 @@ The full analysis report for this project is available on GitHub Pages:
 [View the Restaurant Net Margin Prediction Report](https://ubc-mds-2026-27.github.io/DSCI522-group-15/)
 
 ## AI use statement
+
 AI was used purely for debugging codes and provide guidance to structuring and formatting the files, none were used to generate lines of codes. ChatGPT was used.
 
 ## Project overview
@@ -26,7 +28,7 @@ The supplied dataset has 8,000 orders and 26 columns. The analysis selects 11 or
 
 The following paths are relative to the **repository root**:
 
-```text
+``` text
 .
 ├── README.md
 ├── CONTRIBUTING.md
@@ -56,24 +58,25 @@ The following paths are relative to the **repository root**:
     ├── activate.R
     └── settings.json
 ```
+
 The report creates `data/raw/` and `data/processed/` if they do not exist, downloads the raw data if the CSV is missing, and writes the processed training and test CSVs. The HTML report is generated alongside the `.qmd` file.
 
 ## Requirements
 
 Install the following on Windows or macOS:
 
-1. [R](https://cran.r-project.org/) **4.6.1** 
-2. [Quarto CLI](https://quarto.org/docs/get-started/) to render the `.qmd` report.
-3. [RStudio Desktop](https://posit.co/download/rstudio-desktop/) (recommended, but optional), or another terminal/editor that can run R and Quarto.
-4. Internet access for the initial R package installation and, if the raw CSV is absent, the Kaggle dataset download.
+1.  [R](https://cran.r-project.org/) **4.6.1**
+2.  [Quarto CLI](https://quarto.org/docs/get-started/) to render the `.qmd` report.
+3.  [RStudio Desktop](https://posit.co/download/rstudio-desktop/) (recommended, but optional), or another terminal/editor that can run R and Quarto.
+4.  Internet access for the initial R package installation and, if the raw CSV is absent, the Kaggle dataset download.
 
 ## Reproduce the analysis (Windows and macOS)
 
 ### 1. Open the repository root
 
-Download or clone the repository, and **open its root folder**, not the `analysis/` subfolder. In RStudio, use **File > New Project > Existing Directory** to select this folder if you do not already have an `.Rproj` file. Confirm that the R Console shows the repository root when you run:
+Download or clone the repository, and **open its root folder**, not the `analysis/` subfolder. In RStudio, use **File \> New Project \> Existing Directory** to select this folder if you do not already have an `.Rproj` file. Confirm that the R Console shows the repository root when you run:
 
-```r
+``` r
 getwd()
 ```
 
@@ -83,7 +86,7 @@ The root folder must contain `analysis/restaurant-net-margin-prediction.qmd`.
 
 In the **R Console** (same commands on Windows and macOS), run:
 
-```r
+``` r
 if (!requireNamespace("renv", quietly = TRUE)) {
   install.packages("renv", repos = "https://cloud.r-project.org")
 }
@@ -92,7 +95,7 @@ renv::restore(prompt = FALSE)
 
 This restores the R package versions recorded in `renv.lock` to the project-specific library. It may take several minutes on a new computer. You can check the environment with:
 
-```r
+``` r
 renv::status()
 ```
 
@@ -102,14 +105,14 @@ renv::status()
 
 **Option B — manual download (fallback):** If Kaggle is blocked:
 
-1. Download the dataset from the [Kaggle source page](https://www.kaggle.com/datasets/luthfimuthathohirin/global-food-delivery-restaurant-market-2026/data).
-2. Extract the archive if necessary.
-3. Create `data/raw/` under the repository root if it does not exist (using File Explorer on Windows or Finder on macOS is fine).
-4. Place **`global_food_delivery_enriched_market_2026.csv`** directly in `data/raw/` (not in a nested subfolder).
+1.  Download the dataset from the [Kaggle source page](https://www.kaggle.com/datasets/luthfimuthathohirin/global-food-delivery-restaurant-market-2026/data).
+2.  Extract the archive if necessary.
+3.  Create `data/raw/` under the repository root if it does not exist (using File Explorer on Windows or Finder on macOS is fine).
+4.  Place **`global_food_delivery_enriched_market_2026.csv`** directly in `data/raw/` (not in a nested subfolder).
 
 For the original CSV supplied with this milestone, the SHA-256 checksum is:
 
-```text
+``` text
 31b2c932fddef2026085c98208b124d8ce4b47dfa9020272e3ba8f80e5699f38
 ```
 
@@ -117,13 +120,13 @@ To verify that your local file is identical, run one of these commands **from th
 
 **macOS Terminal**
 
-```bash
+``` bash
 shasum -a 256 data/raw/global_food_delivery_enriched_market_2026.csv
 ```
 
 **Windows PowerShell**
 
-```powershell
+``` powershell
 Get-FileHash -Algorithm SHA256 data/raw/global_food_delivery_enriched_market_2026.csv
 ```
 
@@ -133,18 +136,22 @@ If Kaggle later changes its published dataset, the automatically downloaded file
 
 In **Terminal** (macOS), **PowerShell** (Windows), or RStudio's **Terminal** tab, navigate to the repository root and run:
 
-```bash
+``` bash
 quarto render analysis/restaurant-net-margin-prediction.qmd
 ```
 
 Alternatively, open `analysis/restaurant-net-margin-prediction.qmd` in RStudio and click **Render**. The report currently has `execute: eval: true`, so Quarto executes its R chunks rather than merely displaying them.
 
+### 5. Running the analysis in the container
+
+To run this analysis, install Git and [Docker Desktop]([https://www.docker.com/products/docker-desktop/)](https://www.docker.com/products/docker-desktop/)) (or Docker Engine with Docker Compose) on Windows or macOS. All R packages and Quarto dependencies are already installed inside the container image referenced in \`docker-compose.yml\`.
+
 **Expected generated files:**
 
 - `analysis/restaurant-net-margin-prediction.html` — report containing the exploration, model comparison, and final test evaluation.
 - `data/raw/global_food_delivery_enriched_market_2026.csv` — source dataset, if it needed to be downloaded.
-- `data/processed/orders_train.csv` — 6,400 rows and 12 columns.
-- `data/processed/orders_test.csv` — 1,600 rows and 12 columns.
+- `data/processed/orders_train.csv` - 6,400 rows and 12 columns.
+- `data/processed/orders_test.csv` - 1,600 rows and 12 columns.
 
 Both processed files are produced **by the report**; do not manually substitute the pre-split CSVs for the raw dataset. Rendering again will regenerate the split with seed `522`, assuming the same input data and compatible R/package versions.
 
@@ -152,14 +159,14 @@ Both processed files are produced **by the report**; do not manually substitute 
 
 After a successful render, check that:
 
-1. The HTML output exists and includes the results and plots.
-2. Both processed CSV files exist and have 6,400 and 1,600 rows, respectively.
-3. `renv::status()` reports that the project environment is synchronized.
-4. The render completes on both Windows and macOS using a clean checkout and the steps above.
+1.  The HTML output exists and includes the results and plots.
+2.  Both processed CSV files exist and have 6,400 and 1,600 rows, respectively.
+3.  `renv::status()` reports that the project environment is synchronized.
+4.  The render completes on both Windows and macOS using a clean checkout and the steps above.
 
 You can check the processed CSV row counts in the R Console:
 
-```r
+``` r
 nrow(read.csv("data/processed/orders_train.csv"))
 nrow(read.csv("data/processed/orders_test.csv"))
 ```
@@ -174,7 +181,7 @@ nrow(read.csv("data/processed/orders_test.csv"))
 
 ## Data source and attribution
 
-Muthathohirin, L. *Global Food Delivery Restaurant Market 2026*. Kaggle. https://www.kaggle.com/datasets/luthfimuthathohirin/global-food-delivery-restaurant-market-2026/data
+Muthathohirin, L. *Global Food Delivery Restaurant Market 2026*. Kaggle. <https://www.kaggle.com/datasets/luthfimuthathohirin/global-food-delivery-restaurant-market-2026/data>
 
 ## License
 
