@@ -8,6 +8,8 @@ services:
     # name in lowercase, with the sha- tag your workflow pushed (not latest).
     # After that, the workflow updates the tag for you.
     image: zheqijin/dsci522-group-15:sha-c996577
+    # Create SSH's runtime directory before starting the server.
+    command: ["sh", "-c", "mkdir -p /run/sshd && exec /usr/sbin/sshd -D"]
     ports:
       # 2222 on your computer, 22 (ssh) in the container
       - "2222:22"
