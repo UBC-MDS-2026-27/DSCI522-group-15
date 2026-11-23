@@ -7,8 +7,11 @@
 * **Afrah Zilani**
 * **Jerry Zeng**
 
-## Report Link
-[Predicting Restaurant Net Margin from Food Delivery Orders](https://ubc-mds-2026-27.github.io/DSCI522-group-15/analysis/restaurant-net-margin-prediction.html)
+## Published Report
+
+The full analysis report for this project is available on GitHub Pages:
+
+[View the Restaurant Net Margin Prediction Report](https://ubc-mds-2026-27.github.io/DSCI522-group-15/)
 
 ## AI use statement
 AI was used purely for debugging codes and provide guidance to structuring and formatting the files, none were used to generate lines of codes. ChatGPT was used.
@@ -82,13 +85,11 @@ This restores the R package versions recorded in `renv.lock` to the project-spec
 renv::status()
 ```
 
-Do not replace this step with an unpinned `install.packages("tidyverse")` or `install.packages("glmnet")` when reproducing a submitted result.
-
 ### 3. Make the input data available
 
 **Option A — automatic download (default):** No manual download is needed. When the report runs, its R code downloads the public Kaggle dataset ZIP if `data/raw/global_food_delivery_enriched_market_2026.csv` is missing, then extracts it to `data/raw/`.
 
-**Option B — manual download (fallback):** If Kaggle is blocked, or you want to reproduce the analysis using the exact dataset version provided with the submission:
+**Option B — manual download (fallback):** If Kaggle is blocked:
 
 1. Download the dataset from the [Kaggle source page](https://www.kaggle.com/datasets/luthfimuthathohirin/global-food-delivery-restaurant-market-2026/data).
 2. Extract the archive if necessary.
@@ -158,7 +159,7 @@ nrow(read.csv("data/processed/orders_test.csv"))
 - **A package is missing:** Make sure the R session is opened from the repository root and rerun `renv::restore(prompt = FALSE)`. If RStudio was open when `renv` was initialized, restart the R session.
 - **Data download fails:** Follow the manual data-download steps above, then render again. The report skips downloading if the expected raw CSV is already present.
 - **An unexpected file path is reported:** Run the documented render command from the repository root. The `.qmd` itself uses `../data/...` paths relative to its location in `analysis/`.
-- **Different results across computers:** Verify the raw CSV checksum, ensure the same `renv.lock` was restored, and confirm the R and Quarto versions. Pin the Kaggle dataset version in the report's download URL before submission.
+- **Different results across computers:** Verify the raw CSV checksum, ensure the same `renv.lock` was restored, and confirm the R and Quarto versions.
 
 ## Data source and attribution
 
