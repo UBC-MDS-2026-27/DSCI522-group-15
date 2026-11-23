@@ -39,6 +39,22 @@ Edit the source files, including `analysis/restaurant-net-margin-prediction.qmd`
 5. Open a pull request into `main` explaining what changed, why, and how you verified it. Link the related issue, for example with `Closes #12`.
 6. Have at least one other teammate review and approve the pull request. Address feedback before merging; a human reviewer merges the approved changes.
 
+**MILESTONE 2****
+**## Getting Started and Environment Setup****
+
+Before developing in the container, follow the initial setup steps in [README.md](https://github.com/UBC-MDS-2026-27/DSCI522-group-15/blob/main/README.md) to generate your SSH key (`ssh-keygen -t ed25519`) and download the project image (`docker compose pull`). Do not install R packages globally on your host machine to run or develop the project; all development happens inside the `analysis-env` container.
+
+## Working in the Container with Positron over SSH
+
+We develop inside the Docker container using **Positron** over SSH following the [Positron SSH guide](https://ubc-mds.github.io/DSCI_522_dsci-workflows_students/assignments/milestone2.html#positron-ssh):
+
+1. **Install Positron:** Download and install Positron on your computer if you have not already.
+2. **Start the container and connect via SSH:** Start or attach to the `analysis-env` container as described in the [Positron SSH guide](https://ubc-mds.github.io/DSCI_522_dsci-workflows_students/assignments/milestone2.html#positron-ssh) and open the project folder inside the remote SSH session.
+3. **Select the interpreter:** Inside the remote Positron session, select the project's R interpreter so it uses the `renv` environment configured in the container.
+4. **Verify your Git identity:** Before committing changes inside the container, confirm your Git name and email are configured:
+   ```bash
+   git config --list
+
 ## AI use policy
 
 Contributors may use generative AI to help draft, debug, explain, or check code and documentation. Disclose the tools used and how they assisted in the pull request description, including representative prompts where relevant. Maintain the project's AI-use statement in the README.
