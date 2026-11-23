@@ -3,7 +3,7 @@
 
 # Start from Ubuntu Linux with R installed.
 # Change 4.6.2 to the R version in your renv.lock.
-FROM rocker/r-ver:4.6.2
+FROM rocker/r-ver:4.6.1
 
 # Install the programs the project needs:
 # curl downloads files, git/less/nano let you work in a terminal,
