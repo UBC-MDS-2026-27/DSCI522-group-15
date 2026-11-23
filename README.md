@@ -29,6 +29,12 @@ The following paths are relative to the **repository root**:
 ```text
 .
 ├── README.md
+├── CONTRIBUTING.md
+├── LICENSE.md
+├── CODE_OF_CONDUCT.md
+├── Dockerfile                          # Container image definition for R/renv + Quarto
+├── docker-compose.yml                  # Pins container image tag and analysis-env service
+├── DSCI522-group-15.Rproj
 ├── analysis/
 │   ├── restaurant-net-margin-prediction.qmd   # Executable analysis source
 │   └── restaurant-net-margin-prediction.html  # Generated report after rendering
@@ -38,13 +44,18 @@ The following paths are relative to the **repository root**:
 │   └── processed/
 │       ├── orders_train.csv
 │       └── orders_test.csv
-├── .Rprofile                               # Activates renv on project startup
-├── renv.lock                               # Pinned R package dependencies
+├── docs/
+│   ├── index.html                      # Self-contained report served on GitHub Pages
+│   └── .nojekyll                       # Disables Jekyll processing for GitHub Pages
+├── .github/
+│   └── workflows/
+│       └── publish-dockerhub.yml       # Builds and pushes multi-platform Docker image
+├── .Rprofile                           # Activates renv on project startup
+├── renv.lock                           # Pinned R package dependencies
 └── renv/
     ├── activate.R
     └── settings.json
 ```
-
 The report creates `data/raw/` and `data/processed/` if they do not exist, downloads the raw data if the CSV is missing, and writes the processed training and test CSVs. The HTML report is generated alongside the `.qmd` file.
 
 ## Requirements
