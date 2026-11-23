@@ -33,6 +33,12 @@ WORKDIR /workspace
 RUN echo "RENV_PATHS_LIBRARY=/opt/renv/library" >> /usr/local/lib/R/etc/Renviron.site
 COPY renv.lock .Rprofile ./
 COPY renv/activate.R renv/
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libharfbuzz-dev \
+    libfribidi-dev \
+    libfreetype6-dev \
+    libwebp-dev \
+    && rm -rf /var/lib/apt/lists/*
 RUN Rscript -e "renv::restore()"
 
 # On a Linux laptop, remove the # from the next line.
