@@ -1,6 +1,6 @@
 # Contributing to Predicting Restaurant Net Margin from Food Delivery Orders
 
-We welcome bug reports, suggestions, and improvements to the analysis and documentation. Please follow our [Code of Conduct](CODE_OF_CONDUCT.md) when participating.
+Thank you for contributing to **Predicting Restaurant Net Margin from Food Delivery Orders**. Please follow these guidelines and workflows when making changes to the project.. We welcome bug reports, suggestions, and improvements to the analysis and documentation. Please follow our [Code of Conduct](https://github.com/UBC-MDS-2026-27/DSCI522-group-15/blob/main/CODE_OF_CONDUCT.md) when participating.
 
 ## Reporting bugs and proposing changes
 
@@ -22,7 +22,7 @@ Render the complete analysis from the repository root:
 quarto render analysis/restaurant-net-margin-prediction.qmd
 ```
 
-The report downloads the data if the raw CSV is missing, so an initial download requires internet access. See the [README](README.md) for detailed setup instructions and troubleshooting.
+The report downloads the data if the raw CSV is missing, so an initial download requires internet access. See the [README](https://github.com/UBC-MDS-2026-27/DSCI522-group-15/blob/main/README.md) for detailed setup instructions and troubleshooting.
 
 If you add an R dependency, install it in the project environment, verify that the report renders, and run `renv::snapshot()` in the R console. Include the resulting `renv.lock` changes in your pull request and explain why the dependency is needed.
 

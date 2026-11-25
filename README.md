@@ -170,6 +170,31 @@ To run this analysis, install Git and [Docker Desktop]([https://www.docker.com/p
 
 Both processed files are produced **by the report**; do not manually substitute the pre-split CSVs for the raw dataset. Rendering again will regenerate the split with seed `522`, assuming the same input data and compatible R/package versions.
 
+**### 7. SSH key creation (ssh-keygen -t ed25519) + directory**
+If you do not already have an SSH key, create one by running `ssh-keygen -t ed25519` in your terminal and pressing Enter at each prompt to accept the default file path and passphrase settings. Do not skip this step when `~/.ssh/id_ed25519.pub` does not exist, because Docker will otherwise create a directory named `~/.ssh/id_ed25519.pub`, which causes SSH connections into the container to fail until you delete that folder and generate the key.
+
+**### 8. Download the image**
+To download the image from the root of the repository, download the pre-built container image specified in `docker-compose.yml` by running:
+
+```bash
+docker compose pull
+
+**### 9. Render the report in the container (docker compose run --rm analysis-env quarto render ...):**
+Once the image finishes downloading, run the following command from the repository root to render the Quarto report inside the `analysis-env` container. Project uses R only and does not have a _quarto.yml at the root listing the report path, include the .qmd path after quarto render:
+
+Render the report inside the container from the repository root by running:
+
+```bash
+docker compose run --rm analysis-env quarto render analysis/restaurant-net-margin-prediction.qmd
+
+**### 10. Stop and remove the container**
+Because the render command above includes the `--rm` flag, Docker automatically stops and removes the container as soon as the `quarto render` command finishes, leaving your generated files intact in the repository directory. If you instead start the container in the background using `docker compose up -d` for interactive work, stop and remove the running container and its network when you are done by running:
+```bash
+docker compose down
+
+**### Contribute to the project:**
+    If you want to modify the analysis code, add or update R packages, or contribute changes to the repository, read [CONTRIBUTING.md](https://github.com/UBC-MDS-2026-27/DSCI522-group-15/blob/main/CONTRIBUTING.md) before making edits. That guide explains how to connect Positron to the container over SSH, update `renv` dependencies and container tags through pull requests, and copy updated HTML outputs to `docs/index.html` for GitHub Pages.
+
 ## Troubleshooting
 
 - **`quarto` is not recognized:** Install the Quarto CLI, restart the terminal, and confirm `quarto --version` works; alternatively, use RStudio's **Render** button.
