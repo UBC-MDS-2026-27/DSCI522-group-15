@@ -70,7 +70,7 @@ Install the following on Windows or macOS:
 3.  [RStudio Desktop](https://posit.co/download/rstudio-desktop/) (recommended, but optional), or another terminal/editor that can run R and Quarto.
 4.  Internet access for the initial R package installation and, if the raw CSV is absent, the Kaggle dataset download.
 
-## Reproduce the analysis (Windows and macOS)
+## Milestone 1 - Reproducing the analysis (Windows and macOS)
 
 ### 1. Open the repository root
 
@@ -157,51 +157,169 @@ You can check the processed CSV row counts in the R Console:
 nrow(read.csv("data/processed/orders_train.csv"))
 nrow(read.csv("data/processed/orders_test.csv"))
 ```
-### 6. Running the analysis in the container
 
-To run this analysis, install Git and [Docker Desktop]([https://www.docker.com/products/docker-desktop/)](https://www.docker.com/products/docker-desktop/)) (or Docker Engine with Docker Compose) on Windows or macOS. All R packages and Quarto dependencies are already installed inside the container image referenced in \`docker-compose.yml\`.
+### Milestone 2 -Reproducing the Analysis
 
-**Expected generated files:**
+The analysis can be reproduced using the Docker environment configured in this repository. The container includes the required R environment, R packages, and Quarto installation. You do not need to install the project's R packages or Quarto locally.
 
-- `analysis/restaurant-net-margin-prediction.html` — report containing the exploration, model comparison, and final test evaluation.
-- `data/raw/global_food_delivery_enriched_market_2026.csv` — source dataset, if it needed to be downloaded.
-- `data/processed/orders_train.csv` - 6,400 rows and 12 columns.
-- `data/processed/orders_test.csv` - 1,600 rows and 12 columns.
+### Prerequisites
 
-Both processed files are produced **by the report**; do not manually substitute the pre-split CSVs for the raw dataset. Rendering again will regenerate the split with seed `522`, assuming the same input data and compatible R/package versions.
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running (Windows or macOS).
 
-**### 7. SSH key creation (ssh-keygen -t ed25519) + directory**
-If you do not already have an SSH key, create one by running `ssh-keygen -t ed25519` in your terminal and pressing Enter at each prompt to accept the default file path and passphrase settings. Do not skip this step when `~/.ssh/id_ed25519.pub` does not exist, because Docker will otherwise create a directory named `~/.ssh/id_ed25519.pub`, which causes SSH connections into the container to fail until you delete that folder and generate the key.
+- Git installed.
 
-**### 8. Download the image**
-To download the image from the root of the repository, download the pre-built container image specified in `docker-compose.yml` by running:
+- A terminal (Terminal on macOS or PowerShell on Windows).
 
-```bash
+Run the following commands from the repository root.
+
+### 1. Generate an SSH key
+
+If you do not already have an SSH key, generate one by running:
+
+```         
+ssh-keygen -t ed25519
+```
+
+Press Enter at each prompt to accept the default file location and settings.
+
+This step is important because the Docker Compose configuration mounts the public SSH key at `~/.ssh/id_ed25519.pub`. If the key does not exist, Docker may create a directory at that path, causing SSH connections to the container to fail.
+
+### 2. Download the Docker image
+
+Download the pre-built container image specified in `docker-compose.yml`:
+
+```         
 docker compose pull
+```
 
-**### 9. Render the report in the container (docker compose run --rm analysis-env quarto render ...):**
-Once the image finishes downloading, run the following command from the repository root to render the Quarto report inside the `analysis-env` container. Project uses R only and does not have a _quarto.yml at the root listing the report path, include the .qmd path after quarto render:
+Wait for the image to finish downloading before proceeding.
 
-Render the report inside the container from the repository root by running:
+### 3. Render the report inside the container
 
-```bash
+Run the following command from the repository root:
+
+```         
 docker compose run --rm analysis-env quarto render analysis/restaurant-net-margin-prediction.qmd
+```
 
-**### 10. Stop and remove the container**
-Because the render command above includes the `--rm` flag, Docker automatically stops and removes the container as soon as the `quarto render` command finishes, leaving your generated files intact in the repository directory. If you instead start the container in the background using `docker compose up -d` for interactive work, stop and remove the running container and its network when you are done by running:
-```bash
+This runs the Quarto report using the R environment inside the `analysis-env` container.
+
+The report's HTML output will be generated at:
+
+`analysis/restaurant-net-margin-prediction.html`
+
+The `.qmd` file path is included explicitly because the project does not use a root-level `_quarto.yml` to list the report.
+
+### 4. Container cleanup
+
+The `--rm` option automatically stops and removes the temporary container after the rendering process finishes. The generated files remain in the project directory because the repository is mounted into the container.
+
+If you instead start the container in the background using:
+
+```         
+docker compose up -d
+```
+
+stop and remove the container and its network when finished by running:
+
+```         
 docker compose down
+```
 
-**### Contribute to the project:**
-    If you want to modify the analysis code, add or update R packages, or contribute changes to the repository, read [CONTRIBUTING.md](https://github.com/UBC-MDS-2026-27/DSCI522-group-15/blob/main/CONTRIBUTING.md) before making edits. That guide explains how to connect Positron to the container over SSH, update `renv` dependencies and container tags through pull requests, and copy updated HTML outputs to `docs/index.html` for GitHub Pages.
+### 5. View the report
+
+After rendering, the generated HTML report can be opened locally from the `analysis/` directory.
+
+The published report is also available here:
+
+[View the project report on GitHub Pages](https://ubc-mds-2026-27.github.io/DSCI522-group-15/)
+
+## Dataset and Data Reproducibility
+
+The project uses the [Global Food Delivery Restaurant Market 2026 dataset](https://www.kaggle.com/datasets/luthfimuthathohirin/global-food-delivery-restaurant-market-2026/data).
+
+The report creates the required data directories and downloads the public Kaggle dataset ZIP if `data/raw/global_food_delivery_enriched_market_2026.csv` is missing.
+
+**Manual download fallback:** If the automatic Kaggle download fails:
+
+1.  Download the dataset from the [Kaggle source page](https://www.kaggle.com/datasets/luthfimuthathohirin/global-food-delivery-restaurant-market-2026/data).
+
+2.  Extract the archive if necessary.
+
+3.  Create `data/raw/` under the repository root if it does not exist.
+
+4.  Place `global_food_delivery_enriched_market_2026.csv` directly inside `data/raw/`.
+
+For the original CSV supplied with this milestone, the SHA-256 checksum is:
+
+```         
+31b2c932fddef2026085c98208b124d8ce4b47dfa9020272e3ba8f80e5699f38
+```
+
+To verify that the local file is identical, run the relevant command from the repository root.
+
+**macOS Terminal**
+
+```         
+shasum -a 256 data/raw/global_food_delivery_enriched_market_2026.csv
+```
+
+**Windows PowerShell**
+
+```         
+Get-FileHash -Algorithm SHA256 data/raw/global_food_delivery_enriched_market_2026.csv
+```
+
+If Kaggle later changes its published dataset, the automatically downloaded file may no longer match this checksum. Use the original, version-pinned dataset for exact result reproducibility.
+
+## Expected Generated Files
+
+After a successful render, the following files should be available:
+
+- `analysis/restaurant-net-margin-prediction.html` – rendered report containing the analysis and results.
+
+- `data/raw/global_food_delivery_enriched_market_2026.csv` – source dataset, if it needed to be downloaded.
+
+- `data/processed/orders_train.csv` – training dataset containing 6,400 rows and 12 columns.
+
+- `data/processed/orders_test.csv` – test dataset containing 1,600 rows and 12 columns.
+
+Both processed CSV files are produced by the report. Rendering again regenerates the split using random seed `522`, assuming the same input data and compatible R/package versions.
+
+You can verify the processed CSV row counts using R:
+
+```         
+nrow(read.csv("data/processed/orders_train.csv"))
+nrow(read.csv("data/processed/orders_test.csv"))
+```
+
+**\### Contribute to the project:** If you want to modify the analysis code, add or update R packages, or contribute changes to the repository, read [CONTRIBUTING.md](https://github.com/UBC-MDS-2026-27/DSCI522-group-15/blob/main/CONTRIBUTING.md) before making edits.
+
+The contributing guide explains how to connect to the development environment using Positron over SSH, work with the container, update project dependencies, and contribute changes through pull requests.
 
 ## Troubleshooting
+
+MILESTONE 1
 
 - **`quarto` is not recognized:** Install the Quarto CLI, restart the terminal, and confirm `quarto --version` works; alternatively, use RStudio's **Render** button.
 - **A package is missing:** Make sure the R session is opened from the repository root and rerun `renv::restore(prompt = FALSE)`. If RStudio was open when `renv` was initialized, restart the R session.
 - **Data download fails:** Follow the manual data-download steps above, then render again. The report skips downloading if the expected raw CSV is already present.
 - **An unexpected file path is reported:** Run the documented render command from the repository root. The `.qmd` itself uses `../data/...` paths relative to its location in `analysis/`.
 - **Different results across computers:** Verify the raw CSV checksum, ensure the same `renv.lock` was restored, and confirm the R and Quarto versions.
+
+MILESTONE 2
+
+- **Docker is not running:** Start Docker Desktop and retry the Docker Compose command.
+
+- **SSH connection fails:** Check that `~/.ssh/id_ed25519.pub` exists and is a public-key file. If Docker created a directory at that path, remove the incorrect directory and generate the SSH key.
+
+- **Docker image pull fails:** Check your internet connection and confirm that the image tag in `docker-compose.yml` is available.
+
+- **Data download fails:** Follow the manual dataset download instructions above, then render again. The report skips downloading if the expected raw CSV is already present.
+
+- **An unexpected file path is reported:** Run the documented render command from the repository root. The `.qmd` file uses paths relative to its location in `analysis/`.
+
+- **Different results across computers:** Verify the raw CSV checksum and ensure that the same `renv.lock` and container image are being used.
 
 ## Data source and attribution
 
