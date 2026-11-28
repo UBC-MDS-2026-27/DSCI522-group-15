@@ -1,6 +1,6 @@
 # Contributing to Predicting Restaurant Net Margin from Food Delivery Orders
 
-Thank you for contributing to **Predicting Restaurant Net Margin from Food Delivery Orders**. Please follow these guidelines and workflows when making changes to the project.. We welcome bug reports, suggestions, and improvements to the analysis and documentation. Please follow our [Code of Conduct](https://github.com/UBC-MDS-2026-27/DSCI522-group-15/blob/main/CODE_OF_CONDUCT.md) when participating.
+Thank you for contributing to **Predicting Restaurant Net Margin from Food Delivery Orders**. Please follow these guidelines and workflows when making changes to the project. We welcome bug reports, suggestions, and improvements to the analysis and documentation. Please follow our [Code of Conduct](https://github.com/UBC-MDS-2026-27/DSCI522-group-15/blob/main/CODE_OF_CONDUCT.md) when participating.
 
 ## Reporting bugs and proposing changes
 
@@ -20,102 +20,11 @@ For bug reports, include:
 
 Do not include private information, credentials, or confidential data in issues.
 
-[**MILESTONE 1**]{.underline}
+## Initial setup
 
-## Setting up the project
+All development takes place inside the Docker container. Complete the [README setup and image download](README.md#run-the-analysis) first, including the SSH key and Git configuration checks. Do not install project packages globally on your computer.
 
-Install R 4.6.1 and the [Quarto CLI](https://quarto.org/docs/get-started/). Clone the repository and enter its root directory in a terminal:
-
-``` bash
-git clone https://github.com/UBC-MDS-2026-27/DSCI522-group-15.git
-cd DSCI522-group-15
-Rscript -e 'renv::restore()'
-```
-
-Render the complete analysis from the repository root:
-
-``` bash
-quarto render analysis/restaurant-net-margin-prediction.qmd
-```
-
-The report downloads the data if the raw CSV is missing, so an initial download requires internet access. See the [README](https://github.com/UBC-MDS-2026-27/DSCI522-group-15/blob/main/README.md) for detailed setup instructions and troubleshooting.
-
-If you add an R dependency, install it in the project environment, verify that the report renders, and run `renv::snapshot()` in the R console. Include the resulting `renv.lock` changes in your pull request and explain why the dependency is needed.
-
-## Editing documentation
-
-Edit the source files, including `analysis/restaurant-net-margin-prediction.qmd`, rather than manually editing generated HTML. After changing the report, render it again and include the updated HTML. Even small typo fixes made through the GitHub web interface must use a branch and a reviewed pull request.
-
-## Pull request process
-
-1.  Start from an up-to-date `main` and create a branch in this repository for each independent feature or fix. Do not push directly to `main`.
-2.  Use a descriptive branch name, such as `fix-readme-typo` or `add-eda-figure`, and keep changes focused.
-3.  Follow the [tidyverse R style guide](https://style.tidyverse.org/) and write meaningful commit messages.
-4.  Render the report before opening the pull request and check the output. Run `renv::status()` to check environment consistency.
-5.  Open a pull request into `main` explaining what changed, why, and how you verified it. Link the related issue, for example with `Closes #12`.
-6.  Have at least one other teammate review and approve the pull request. Address feedback before merging; a human reviewer merges the approved changes.
-
-[**MILESTONE 2**]{.underline}
-
-### **\### Getting Started and Environment Setup\*\*\*\***
-
-All project development and analysis should take place inside the Docker container to ensure that contributors use a consistent environment.
-
-You do not need to install R packages or Quarto locally to run the project.
-
-### Prerequisites
-
-Before getting started, install:
-
-- [Git](https://git-scm.com/downloads).
-
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows or macOS).
-
-- [Positron](https://positron.posit.co/) for editing and working inside the container.
-
-For initial setup, follow the instructions in the [README.md](README.md).Working in the Container with Positron over SSH
-
-We develop inside the Docker container using **Positron** over SSH following the [Positron SSH guide](https://ubc-mds.github.io/DSCI_522_dsci-workflows_students/assignments/milestone2.html#positron-ssh):
-
-### 1. Generate an SSH key
-
-The project uses SSH to connect Positron to the running Docker container.
-
-If you do not already have an SSH key, open a terminal and run:
-
-```         
-ssh-keygen -t ed25519
-```
-
-Press Enter at each prompt to accept the default file location and settings.
-
-The Docker Compose configuration mounts the public key at `~/.ssh/id_ed25519.pub`. Make sure this file exists before starting the container.
-
-### 2. Download the Docker image
-
-From the repository root, download the pre-built image:
-
-```         
-docker compose pull
-```
-
-The image contains the R environment, required R packages, and Quarto.
-
-### 3. Clone the repository
-
-If you have not already cloned the repository:
-
-```         
-git clone https://github.com/UBC-MDS-2026-27/DSCI522-group-15.git
-cd DSCI522-group-15
-```
-
-If you already have the repository, navigate to its root directory and pull the latest changes:
-
-```         
-git pull
-docker compose pull
-```
+Install [Positron](https://positron.posit.co/download.html). Its Remote SSH feature is built in. The instructions below adapt the [course SSH guide](https://ubc-mds.github.io/DSCI_522_dsci-workflows_students/assignments/milestone2.html#positron-ssh) to this project.
 
 ## Working in the Container with Positron over SSH
 
@@ -127,7 +36,7 @@ This allows contributors to edit and execute project files using the same enviro
 
 From the repository root, run:
 
-```         
+```
 docker compose up -d
 ```
 
@@ -135,90 +44,64 @@ This starts the `analysis-env` service in the background. The container exposes 
 
 ### 2. Connect Positron to the container
 
-Follow the [course Positron SSH guide](https://ubc-mds.github.io/DSCI_522_dsci-workflows_students/assignments/milestone2.html#positron-ssh) to configure the SSH connection.
+Check that `docker compose ps` lists `analysis-env` as running. In Positron, open the Command Palette with `Cmd+Shift+P` on macOS or `Ctrl+Shift+P` on Windows. Run **Remote SSH: Show Remote Menu**, choose **Connect to Host**, and enter `root@localhost:2222`.
 
-The connection uses the following settings from the project's Docker Compose configuration:
+Choose **Linux** if asked for the remote platform. Accept the host fingerprint for this local container. The first connection may take several minutes while Positron installs its server.
 
-- **Host:** `localhost`
-
-- **Port:** `2222`
-
-- **Username:** `root`
-
-- **Identity file:** your SSH private key (`~/.ssh/id_ed25519`)
-
-- **Project directory:** `/workspace`
-
-Open the project folder at `/workspace` after connecting.
+In the remote window, select **Open Folder** and enter `/workspace`. The initial terminal may open in `/root`; the project files are in `/workspace`. Edits there are also saved to the mounted repository on your computer.
 
 ### 3. Select the R interpreter
 
-Inside the remote Positron session:
+Click the interpreter button at the top right, choose **New Console Session…**, and select the container's R 4.6.1 interpreter. Open the project at `/workspace` so `.Rprofile` activates `renv`. In the R console, check `R.version.string` and `.libPaths()`; the project's library is `/opt/renv/library`.
 
-1.  Open the project folder at `/workspace`.
-
-2.  Select the R interpreter available inside the container.
-
-3.  Confirm that the project `.Rprofile` activates the `renv` environment.
-
-4.  Check that the required packages are available before running the analysis.
+The Terminal, Console, and Render button in this remote window execute inside the container.
 
 ### 4. Verify your Git identity
 
 Before committing changes, verify that your Git name and email are configured:
 
-```         
+```
 git config --list
 ```
 
 The project's Docker Compose configuration mounts your local `.gitconfig` into the container. If your Git identity is missing, configure it on your host computer:
 
-```         
+```
 git config --global user.name "Your Name"
 git config --global user.email "your-email@example.com"
 ```
 
 Reconnect or check the Git configuration inside the container:
 
-```         
+```
 git config --list
 ```
 
 Use the email address associated with your GitHub account where appropriate.
 
+### Connection troubleshooting
+
+If `docker compose ps` does not show a running service, inspect `docker compose logs analysis-env`. Ensure Docker Desktop is running before restarting the container.
+
+If `~/.ssh/id_ed25519.pub` or `~/.gitconfig` is a directory, follow the [README troubleshooting instructions](README.md#troubleshooting). If SSH asks for a password, check that your public key is named `id_ed25519.pub` and that the private key `~/.ssh/id_ed25519` is available to your SSH client. If you use another key, update the public-key mount and SSH identity configuration to match.
+
+After rebuilding your local container, an expected host-key change can be cleared with `ssh-keygen -R "[localhost]:2222"` before reconnecting. If port 2222 is already occupied, stop the conflicting container or use another host port in Compose and connect to that port.
+
+On Linux laptops, the mounted public key can have an owner other than root. Follow the course guide's Linux-specific `StrictModes no` Dockerfile adjustment and rebuild the image if SSH rejects the key for this reason. If GitHub asks for authentication when pushing, sign in through the browser window opened by Positron.
+
 ## Developing and Updating the Project
 
 ### Working on changes
 
-1.  Start from an up-to-date `main` branch.
+Follow the [pull request process](#pull-request-process) below for all changes. Make and test your changes inside the container using Positron.
 
-2.  Create a separate branch for your change.
+For example, create a branch from an up-to-date `main`:
 
-3.  Make your changes inside the container using Positron.
-
-4.  Test the changes before committing.
-
-5.  Push your branch and open a pull request.
-
-For example:
-
-```         
+```bash
 git checkout main
 git pull
 git checkout -b update-analysis
 ```
-
-Use descriptive branch names such as:
-
-- `fix-data-cleaning`
-
-- `update-model-evaluation`
-
-- `add-visualization`
-
-- `update-documentation`
-
-Do not push directly to `main`.
 
 ### Updating R packages
 
@@ -228,7 +111,7 @@ If you need to add or update an R package:
 
 2.  Add or update the dependency using `renv`.
 
-3.  Update the project's `DESCRIPTION` file with the package dependency and its pinned version.
+3.  Add the direct dependency to `DESCRIPTION` with an exact constraint, such as `package_name (== x.y.z)`. Keep `knitr` and `rmarkdown` listed for Quarto rendering, and keep every declared version consistent with `renv.lock`.
 
 4.  Run `renv::snapshot()` to update `renv.lock`.
 
@@ -238,36 +121,36 @@ If you need to add or update an R package:
 
 For example, to install a package:
 
-```         
-renv::install("package_name")
+```
+renv::install("package_name@x.y.z")
 ```
 
 Then update the lockfile:
 
-```         
+```
 renv::snapshot()
 ```
 
-Include all relevant dependency changes in your pull request, including `DESCRIPTION` and `renv.lock`.
+Include `DESCRIPTION` and `renv.lock` together, plus any changes to `.Rprofile` or `renv/`. The lockfile also records transitive dependencies. Run `renv::status()` and resolve inconsistencies before pushing. Replace the example package name and version above with a real package and version.
 
 ### Updating the Docker image
 
 The project uses GitHub Actions to build and publish the Docker image to Docker Hub.
 
-When changes are made to the environment-related files, the workflow builds and publishes an updated image for both `linux/amd64` and `linux/arm64`.
+Changes to `renv.lock`, the Dockerfile, or the other paths listed in the workflow trigger builds for `linux/amd64` and `linux/arm64`. A `DESCRIPTION`-only change does not currently trigger a build; use **Actions → Publish image to Docker Hub → Run workflow** on your branch when a manual build is needed.
 
 The workflow also updates the image tag in `docker-compose.yml` to identify the image built from the relevant commit.
 
 When the image has been updated on your branch:
 
-```         
+```
 git pull
 docker compose pull
 ```
 
-After the branch is merged into `main`, contributors should pull the latest repository changes and image:
+Wait for the branch build and automatic Compose-tag commit, then pull the branch and image before merging through a reviewed pull request. After merging environment changes into `main`, wait for its build and automatic tag commit before contributors run:
 
-```         
+```
 git checkout main
 git pull
 docker compose pull
@@ -285,7 +168,7 @@ Make changes to the `.qmd` source file rather than manually editing the generate
 
 To render the report inside the container, run:
 
-```         
+```
 docker compose run --rm analysis-env quarto render analysis/restaurant-net-margin-prediction.qmd
 ```
 
@@ -293,15 +176,15 @@ The generated HTML report is saved at:
 
 `analysis/restaurant-net-margin-prediction.html`
 
-After changing the report:
+Keep `format: html: embed-resources: true` in the report's YAML header so the HTML includes its figures and styling. Inspect the rendered report, then copy it to the Pages directory from the repository root in the container terminal:
 
-1.  Render the `.qmd` file.
+```bash
+mkdir -p docs
+cp analysis/restaurant-net-margin-prediction.html docs/index.html
+touch docs/.nojekyll
+```
 
-2.  Check the generated HTML and confirm that the analysis and visualizations are correct.
-
-3.  Update `docs/index.html` with the latest rendered report so that GitHub Pages displays the current version.
-
-4.  Include the updated report files in your pull request when required.
+Commit and push the source changes and updated report files, including `docs/`, through a reviewed pull request. Do not ignore `docs/` or HTML files in `.gitignore`. Repeat the copy every time the report is re-rendered. GitHub Pages serves `main`'s `/docs` folder; after merging, check that the live report and figures match the submitted version.
 
 The published report is available at:
 
@@ -319,7 +202,7 @@ The published report is available at:
 
 5.  Render the report and verify the output before opening a pull request.
 
-6.  Check environment consistency and verify that the required files are included.
+6.  Run `renv::status()` to check environment consistency and verify that the required files are included.
 
 7.  Open a pull request targeting `main`, explaining what changed, why it was necessary, and how the changes were tested.
 
@@ -335,7 +218,7 @@ A human reviewer must approve and merge the pull request. Do not push directly t
 
 When you finish an interactive development session, stop the container using:
 
-```         
+```
 docker compose down
 ```
 
