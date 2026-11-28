@@ -7,7 +7,7 @@ services:
     # CHANGE THIS LINE once: your Docker Hub username / your GitHub repository's
     # name in lowercase, with the sha- tag your workflow pushed (not latest).
     # After that, the workflow updates the tag for you.
-    image: zheqijin/dsci522-group-15:sha-c996577
+    image: zheqijin/dsci522-group-15:sha-6773361
     # Create SSH's runtime directory before starting the server.
     command: ["sh", "-c", "mkdir -p /run/sshd && exec /usr/sbin/sshd -D"]
     ports:
