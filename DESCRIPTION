@@ -1,0 +1,18 @@
+Package: restaurantnetmargin
+Type: Project
+Title: Predicting Restaurant Net Margin from Food Delivery Orders
+Version: 1.0.0
+Authors@R: c(
+    person("Jerry", "Jin", role = "aut"),
+    person("Afrah", "Zilani", role = "aut"),
+    person("Jerry", "Zeng", role = "aut"))
+Description: Reproducible analysis of restaurant net margin using food delivery
+    order data, with exploratory analysis and regression model comparison.
+License: MIT + file LICENSE.md
+Encoding: UTF-8
+Imports:
+    glmnet (== 5.2),
+    knitr (== 1.52),
+    renv (== 1.3.1),
+    rmarkdown (== 2.32),
+    tidyverse (== 2.0.0)
